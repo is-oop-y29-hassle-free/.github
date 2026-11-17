@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Лабораторная 4 · Эталонные сценарии</title>
+<style>
+:root {
+  --text: #c9d3df; --muted: #7e8a99; --accent: #e8a33d;
+  --panel: rgba(10, 15, 22, 0.9); --border: #1d2836; --border-bright: #2c3a4d;
+}
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--text); font-family: system-ui, "Segoe UI", sans-serif; font-size: 15px; line-height: 1.5; }
+.bg { position: fixed; inset: 0; z-index: -1;
+  background: url("https://images.ctfassets.net/7lhcm73ukv5p/6tcqDcocg2kARQbxjbGOP2/d328aad97866814c40ac4bff10b714f0/clouds-bg.jpg") center / cover no-repeat fixed;
+  filter: brightness(.55) saturate(.8); }
+.wrap { max-width: 62rem; margin: 0 auto; padding: 1.6rem 1rem 4rem; }
+header { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin-bottom: .4rem; }
+h1 { font-size: 1.25rem; margin: 0; letter-spacing: .05em; text-transform: uppercase; color: #eef3f8; }
+header .sub { color: var(--muted); letter-spacing: .06em; }
+.hint { color: var(--muted); font-size: .88rem; max-width: 48rem; }
+.tabs { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+.tab { cursor: pointer; background: var(--panel); color: var(--text); border: 1px solid var(--border);
+  border-radius: 3px; padding: .45rem .85rem; font-size: .9rem; }
+.tab:hover { border-color: var(--border-bright); color: #fff; }
+.tab.active { border-color: var(--accent); color: #fff; }
+.tab .num { color: var(--accent); margin-right: .4rem; font-weight: 700; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 4px;
+  padding: 1rem 1.2rem; margin-bottom: 1rem; }
+.panel h2 { font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+  margin: 0 0 .6rem; font-weight: 600; }
+.panel h2:not(:first-child) { margin-top: 1.1rem; }
+.desc { margin: 0 0 .2rem; }
+.controls-pre { font-family: ui-monospace, Consolas, monospace; font-size: .85rem; white-space: pre-wrap;
+  background: rgba(0, 0, 0, .35); border: 1px solid var(--border); border-radius: 3px;
+  padding: .6rem .8rem; color: #b8c4d2; margin: 0; }
+.controls-pre .head { color: var(--muted); }
+.player { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; margin-bottom: .8rem; }
+button.act { cursor: pointer; background: #16202c; color: var(--text); border: 1px solid var(--border-bright);
+  border-radius: 3px; padding: .45rem .95rem; font-size: .9rem; }
+button.act:hover:not(:disabled) { color: #fff; border-color: var(--accent); }
+button.act:disabled { opacity: .45; cursor: default; }
+button.act.primary { background: var(--accent); border-color: var(--accent); color: #14100a; font-weight: 600; }
+button.act.primary:hover { filter: brightness(1.08); color: #14100a; }
+.status { color: #97a5b4; font-size: .85rem; margin-left: auto;
+  font-family: ui-monospace, Consolas, monospace; }
+.status.done { color: var(--accent); }
+.legend { display: flex; flex-wrap: wrap; gap: .35rem 1rem; font-size: .78rem; color: var(--muted);
+  margin-bottom: .9rem; }
+.legend .chip { display: inline-block; width: .75rem; height: .75rem; border-radius: 2px;
+  margin-right: .35rem; vertical-align: -1px; border: 1px solid rgba(255, 255, 255, .12); }
+.journal { font-family: ui-monospace, Consolas, monospace; font-size: .85rem;
+  background: rgba(0, 0, 0, .35); border: 1px solid var(--border); border-radius: 3px;
+  padding: .8rem; max-height: 26rem; overflow-y: auto; }
+.journal .empty { color: var(--muted); }
+.line { display: flex; gap: .8rem; padding: .08rem 0 .08rem .55rem; border-left: 3px solid var(--c, transparent);
+  animation: reveal .3s ease-out; }
+.line .tick { color: var(--muted); width: 4.6rem; flex: none; }
+@keyframes reveal { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.c-order    { --c: #6fa8dc; } .line.c-order .msg    { color: #9cc1e4; }
+.c-reject   { --c: #ff7373; } .line.c-reject .msg   { color: #ff9a9a; }
+.c-move     { --c: #7fb3d5; }
+.c-escape   { --c: #4dd0b5; } .line.c-escape .msg   { color: #6fd8c0; }
+.c-ew       { --c: #d96bb5; } .line.c-ew .msg       { color: #e29bd4; }
+.c-primary  { --c: #e8c95a; } .line.c-primary .msg  { color: #e8c95a; }
+.c-damage   { --c: #e07b39; } .line.c-damage .msg   { color: #e8935c; }
+.c-kill     { --c: #ff5a5a; } .line.c-kill .msg     { color: #ff5a5a; font-weight: 700; }
+.c-staff    { --c: #59c2a8; } .line.c-staff .msg    { color: #7ccdb6; }
+.c-undo     { --c: #b48ead; } .line.c-undo .msg     { color: #c9a6c2; }
+.c-settings { --c: #8a97a6; } .line.c-settings .msg { color: #8a97a6; }
+.summary { display: grid; grid-template-columns: max-content 1fr; gap: .35rem 1.2rem;
+  font-family: ui-monospace, Consolas, monospace; font-size: .9rem; opacity: 0; transition: opacity .5s; }
+.summary.show { opacity: 1; }
+.summary .k { color: var(--muted); text-transform: uppercase; font-size: .72rem;
+  letter-spacing: .1em; align-self: center; }
+.summary .v { color: #eef3f8; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="wrap">
+  <header>
+    <h1>Эталонные сценарии</h1>
+    <div class="sub">Лабораторная 4 · Dark Blood Pirates</div>
+  </header>
+  <p class="hint">Выберите сценарий и нажмите «Запуск симуляции»: бортовой журнал откроется по тикам.
+  Строки управления, журнал и итог соответствуют правилам из условия лабораторной; числа из журналов
+  удобно сверять собственными тестами.</p>
+  <div class="tabs" id="tabs"></div>
+  <div class="panel">
+    <h2 id="title"></h2>
+    <p class="desc" id="desc"></p>
+    <h2>Управление</h2>
+    <pre class="controls-pre" id="inputLines"></pre>
+  </div>
+  <div class="panel">
+    <h2>Бортовой журнал</h2>
+    <div class="legend">
+      <span><span class="chip" style="background:#6fa8dc"></span>приказы</span>
+      <span><span class="chip" style="background:#ff7373"></span>отказы</span>
+      <span><span class="chip" style="background:#7fb3d5"></span>гиперпрыжки</span>
+      <span><span class="chip" style="background:#d96bb5"></span>глушение</span>
+      <span><span class="chip" style="background:#e8c95a"></span>главная цель</span>
+      <span><span class="chip" style="background:#e07b39"></span>урон</span>
+      <span><span class="chip" style="background:#ff5a5a"></span>уничтожение</span>
+      <span><span class="chip" style="background:#4dd0b5"></span>побег</span>
+      <span><span class="chip" style="background:#59c2a8"></span>кадровые</span>
+      <span><span class="chip" style="background:#b48ead"></span>откат</span>
+    </div>
+    <div class="player">
+      <button class="act primary" id="play">Запуск симуляции</button>
+      <button class="act" id="pause" disabled>Пауза</button>
+      <button class="act" id="speed" disabled>x1</button>
+      <button class="act" id="all">Показать всё</button>
+      <span class="status" id="status">выберите сценарий</span>
+    </div>
+    <div class="journal" id="journal"></div>
+  </div>
+  <div class="panel" id="summaryPanel" hidden>
+    <h2>Итог операции</h2>
+    <div class="summary" id="summary"></div>
+  </div>
+</div>
+<script>
+var SCENARIOS = [{"number":1,"title":"Налёт без глушения","description":"Единственный приказ: флотовый гиперпрыжок. Перехватчики и ударные опаздывают: жертвы успевают уйти.","input":["стратегия: сначала дорогие","тик 1: Кондор: флотовый гиперпрыжок Астероидный пояс","запуск симуляции"],"journal":["тик 1: Кондор: набор скорости для перехода в прыжок","тик 1: Шакал: набор скорости для перехода в прыжок","тик 1: Гарпия: набор скорости для перехода в прыжок","тик 1: Молот: набор скорости для перехода в прыжок","тик 1: Секира: набор скорости для перехода в прыжок","тик 1: приказ «гиперпрыжок» принят (флот -> Астероидный пояс)","тик 1: Кондор: гиперпрыжок начался","тик 1: Шакал: гиперпрыжок начался","тик 1: Гарпия: гиперпрыжок начался","тик 1: Молот: гиперпрыжок начался","тик 1: Секира: гиперпрыжок начался","тик 3: Кондор: гиперпрыжок завершён (Астероидный пояс)","тик 3: Шакал: гиперпрыжок завершён (Астероидный пояс)","тик 3: Гарпия: гиперпрыжок завершён (Астероидный пояс)","тик 4: назначена главная цель: Филипп","тик 4: Филипп: прочность 4700 (-300)","тик 4: Иван: набор скорости для перехода в прыжок","тик 4: Филипп: набор скорости для перехода в прыжок","тик 4: Борис: набор скорости для перехода в прыжок","тик 4: Мария: набор скорости для перехода в прыжок","тик 5: Филипп: прочность 4400 (-300)","тик 5: Иван: гиперпрыжок начался","тик 5: Филипп: гиперпрыжок начался","тик 5: Борис: гиперпрыжок начался","тик 5: Мария: гиперпрыжок начался","тик 5: Молот: гиперпрыжок завершён (Астероидный пояс)","тик 5: Секира: гиперпрыжок завершён (Астероидный пояс)","тик 7: Иван: гиперпрыжок завершён (Станция), полигон покинут","тик 7: Филипп: гиперпрыжок завершён (Станция), полигон покинут","тик 7: Борис: гиперпрыжок завершён (Станция), полигон покинут","тик 9: Мария: гиперпрыжок завершён (Станция), полигон покинут"],"summary":["уничтожены: никто","спаслись: Иван, Филипп, Борис, Мария","ущерб: 0","длительность: 9"]},{"number":2,"title":"Налёт с глушением, стратегия «сначала дорогие»","description":"Три перехватчика глушат три самые дорогие жертвы. Дешёвый Иван убегает, остальным сбой двигателя.","input":["стратегия: сначала дорогие","тик 1: Кондор: флотовый гиперпрыжок Астероидный пояс","тик 4: Кондор: глушение Шакал Филипп","тик 4: Кондор: глушение Гарпия Борис","тик 4: Кондор: глушение Кондор Мария","запуск симуляции"],"journal":["тик 1: Кондор: набор скорости для перехода в прыжок","тик 1: Шакал: набор скорости для перехода в прыжок","тик 1: Гарпия: набор скорости для перехода в прыжок","тик 1: Молот: набор скорости для перехода в прыжок","тик 1: Секира: набор скорости для перехода в прыжок","тик 1: приказ «гиперпрыжок» принят (флот -> Астероидный пояс)","тик 1: Кондор: гиперпрыжок начался","тик 1: Шакал: гиперпрыжок начался","тик 1: Гарпия: гиперпрыжок начался","тик 1: Молот: гиперпрыжок начался","тик 1: Секира: гиперпрыжок начался","тик 3: Кондор: гиперпрыжок завершён (Астероидный пояс)","тик 3: Шакал: гиперпрыжок завершён (Астероидный пояс)","тик 3: Гарпия: гиперпрыжок завершён (Астероидный пояс)","тик 4: попытка глушения двигателя Шакал -> Филипп: успех","тик 4: Филипп: сбой двигателя","тик 4: попытка глушения двигателя Гарпия -> Борис: успех","тик 4: Борис: сбой двигателя","тик 4: попытка глушения двигателя Кондор -> Мария: успех","тик 4: Мария: сбой двигателя","тик 4: назначена главная цель: Филипп","тик 4: Иван: набор скорости для перехода в прыжок","тик 5: Иван: гиперпрыжок начался","тик 5: Молот: гиперпрыжок завершён (Астероидный пояс)","тик 5: Секира: гиперпрыжок завершён (Астероидный пояс)","тик 6: Филипп: прочность 3800 (-1200)","тик 7: Филипп: прочность 2600 (-1200)","тик 7: Иван: гиперпрыжок завершён (Станция), полигон покинут","тик 8: Филипп: прочность 1400 (-1200)","тик 9: Филипп: прочность 200 (-1200)","тик 10: Филипп: прочность 0 (-1200)","тик 10: корабль уничтожен: Филипп","тик 11: назначена главная цель: Борис","тик 11: Борис: прочность 3700 (-1300)","тик 12: Борис: прочность 2400 (-1300)","тик 13: Борис: прочность 1100 (-1300)","тик 14: Борис: прочность 0 (-1300)","тик 14: корабль уничтожен: Борис","тик 15: назначена главная цель: Мария","тик 15: Мария: прочность 1600 (-1400)","тик 16: Мария: прочность 200 (-1400)","тик 17: Мария: прочность 0 (-1400)","тик 17: корабль уничтожен: Мария"],"summary":["уничтожены: Филипп, Борис, Мария","спаслись: Иван","ущерб: 7200000","длительность: 17"]},{"number":3,"title":"Налёт с глушением, стратегия «сначала малого тоннажа»","description":"Глушат лёгкие корабли. Медленная Мария успевает уйти: цена её корабля не входит в ущерб.","input":["стратегия: сначала малого тоннажа","тик 1: Кондор: флотовый гиперпрыжок Астероидный пояс","тик 4: Кондор: глушение Шакал Иван","тик 4: Кондор: глушение Гарпия Филипп","тик 4: Кондор: глушение Кондор Борис","запуск симуляции"],"journal":["тик 1: Кондор: набор скорости для перехода в прыжок","тик 1: Шакал: набор скорости для перехода в прыжок","тик 1: Гарпия: набор скорости для перехода в прыжок","тик 1: Молот: набор скорости для перехода в прыжок","тик 1: Секира: набор скорости для перехода в прыжок","тик 1: приказ «гиперпрыжок» принят (флот -> Астероидный пояс)","тик 1: Кондор: гиперпрыжок начался","тик 1: Шакал: гиперпрыжок начался","тик 1: Гарпия: гиперпрыжок начался","тик 1: Молот: гиперпрыжок начался","тик 1: Секира: гиперпрыжок начался","тик 3: Кондор: гиперпрыжок завершён (Астероидный пояс)","тик 3: Шакал: гиперпрыжок завершён (Астероидный пояс)","тик 3: Гарпия: гиперпрыжок завершён (Астероидный пояс)","тик 4: попытка глушения двигателя Шакал -> Иван: успех","тик 4: Иван: сбой двигателя","тик 4: попытка глушения двигателя Гарпия -> Филипп: успех","тик 4: Филипп: сбой двигателя","тик 4: попытка глушения двигателя Кондор -> Борис: успех","тик 4: Борис: сбой двигателя","тик 4: назначена главная цель: Иван","тик 4: Мария: набор скорости для перехода в прыжок","тик 5: Мария: гиперпрыжок начался","тик 5: Молот: гиперпрыжок завершён (Астероидный пояс)","тик 5: Секира: гиперпрыжок завершён (Астероидный пояс)","тик 6: Иван: прочность 1800 (-1200)","тик 7: Иван: прочность 600 (-1200)","тик 8: Иван: прочность 0 (-1200)","тик 8: корабль уничтожен: Иван","тик 9: назначена главная цель: Филипп","тик 9: Филипп: прочность 3700 (-1300)","тик 9: Мария: гиперпрыжок завершён (Станция), полигон покинут","тик 10: Филипп: прочность 2400 (-1300)","тик 11: Филипп: прочность 1100 (-1300)","тик 12: Филипп: прочность 0 (-1300)","тик 12: корабль уничтожен: Филипп","тик 13: назначена главная цель: Борис","тик 13: Борис: прочность 3600 (-1400)","тик 14: Борис: прочность 2200 (-1400)","тик 15: Борис: прочность 800 (-1400)","тик 16: Борис: прочность 0 (-1400)","тик 16: корабль уничтожен: Борис"],"summary":["уничтожены: Иван, Филипп, Борис","спаслись: Мария","ущерб: 6400000","длительность: 16"]},{"number":4,"title":"Откат боевого приказа","description":"Командир откатывает глушение Марии в тике 6. Состояние боя возвращается к снимку тика 4, и Мария с Иваном уходят.","input":["стратегия: сначала дорогие","тик 1: Кондор: флотовый гиперпрыжок Астероидный пояс","тик 4: Кондор: глушение Шакал Филипп","тик 4: Кондор: глушение Гарпия Борис","тик 4: Кондор: глушение Кондор Мария","тик 6: откат приказа","запуск симуляции"],"journal":["тик 1: Кондор: набор скорости для перехода в прыжок","тик 1: Шакал: набор скорости для перехода в прыжок","тик 1: Гарпия: набор скорости для перехода в прыжок","тик 1: Молот: набор скорости для перехода в прыжок","тик 1: Секира: набор скорости для перехода в прыжок","тик 1: приказ «гиперпрыжок» принят (флот -> Астероидный пояс)","тик 1: Кондор: гиперпрыжок начался","тик 1: Шакал: гиперпрыжок начался","тик 1: Гарпия: гиперпрыжок начался","тик 1: Молот: гиперпрыжок начался","тик 1: Секира: гиперпрыжок начался","тик 3: Кондор: гиперпрыжок завершён (Астероидный пояс)","тик 3: Шакал: гиперпрыжок завершён (Астероидный пояс)","тик 3: Гарпия: гиперпрыжок завершён (Астероидный пояс)","тик 4: попытка глушения двигателя Шакал -> Филипп: успех","тик 4: Филипп: сбой двигателя","тик 4: попытка глушения двигателя Гарпия -> Борис: успех","тик 4: Борис: сбой двигателя","тик 4: приказ откатан: состояние восстановлено по снимку","тик 4: назначена главная цель: Филипп","тик 4: Филипп: прочность 4900 (-100)","тик 4: Иван: набор скорости для перехода в прыжок","тик 4: Мария: набор скорости для перехода в прыжок","тик 5: Филипп: прочность 4800 (-100)","тик 5: Иван: гиперпрыжок начался","тик 5: Мария: гиперпрыжок начался","тик 5: Молот: гиперпрыжок завершён (Астероидный пояс)","тик 5: Секира: гиперпрыжок завершён (Астероидный пояс)","тик 6: Филипп: прочность 3500 (-1300)","тик 7: Филипп: прочность 2200 (-1300)","тик 7: Иван: гиперпрыжок завершён (Станция), полигон покинут","тик 8: Филипп: прочность 900 (-1300)","тик 9: Филипп: прочность 0 (-1300)","тик 9: корабль уничтожен: Филипп","тик 9: Мария: гиперпрыжок завершён (Станция), полигон покинут","тик 10: назначена главная цель: Борис","тик 10: Борис: прочность 3600 (-1400)","тик 11: Борис: прочность 2200 (-1400)","тик 12: Борис: прочность 800 (-1400)","тик 13: Борис: прочность 0 (-1400)","тик 13: корабль уничтожен: Борис"],"summary":["уничтожены: Филипп, Борис","спаслись: Иван, Мария","ущерб: 6000000","длительность: 13"]},{"number":5,"title":"Отклонённые приказы и настройки приёма","description":"Секира не принимает флотовый гиперпрыжок. Приказы отклоняются по правам, оснащению, состоянию цели и составу эскадрильи.","input":["стратегия: сначала дорогие","настройка: Секира не принимает флотовый гиперпрыжок","тик 1: Кондор: флотовый гиперпрыжок Астероидный пояс","тик 4: Гарпия: глушение Гарпия Филипп","тик 4: Кондор: глушение Молот Филипп","тик 6: Кондор: глушение Шакал Иван","тик 6: Кондор: назначить эскадрилью Секира Перехват","тик 6: Кондор: назначить лидера Удар Секира","тик 6: Кондор: назначить лидера Перехват Секира","запуск симуляции"],"journal":["тик 1: Секира: гиперпрыжок пропущен по настройке приёма","тик 1: Кондор: набор скорости для перехода в прыжок","тик 1: Шакал: набор скорости для перехода в прыжок","тик 1: Гарпия: набор скорости для перехода в прыжок","тик 1: Молот: набор скорости для перехода в прыжок","тик 1: приказ «гиперпрыжок» принят (флот -> Астероидный пояс)","тик 1: Кондор: гиперпрыжок начался","тик 1: Шакал: гиперпрыжок начался","тик 1: Гарпия: гиперпрыжок начался","тик 1: Молот: гиперпрыжок начался","тик 3: Кондор: гиперпрыжок завершён (Астероидный пояс)","тик 3: Шакал: гиперпрыжок завершён (Астероидный пояс)","тик 3: Гарпия: гиперпрыжок завершён (Астероидный пояс)","тик 4: приказ «глушение двигателя» отклонён: глушение приказывают командир флота или лидер эскадрильи","тик 4: приказ «глушение двигателя» отклонён: исполнитель не оснащён модуляторами глушения","тик 4: назначена главная цель: Филипп","тик 4: Филипп: прочность 4700 (-300)","тик 4: Иван: набор скорости для перехода в прыжок","тик 4: Филипп: набор скорости для перехода в прыжок","тик 4: Борис: набор скорости для перехода в прыжок","тик 4: Мария: набор скорости для перехода в прыжок","тик 5: Филипп: прочность 4400 (-300)","тик 5: Иван: гиперпрыжок начался","тик 5: Филипп: гиперпрыжок начался","тик 5: Борис: гиперпрыжок начался","тик 5: Мария: гиперпрыжок начался","тик 5: Молот: гиперпрыжок завершён (Астероидный пояс)","тик 6: приказ «глушение двигателя» отклонён: цель в гиперпрыжке","тик 6: Секира: назначена эскадрилья Перехват (была Удар)","тик 6: приказ «назначить лидера эскадрильи» отклонён: пилот не состоит в этой эскадрилье","тик 6: Секира: назначен лидером эскадрильи Перехват","тик 7: Иван: гиперпрыжок завершён (Станция), полигон покинут","тик 7: Филипп: гиперпрыжок завершён (Станция), полигон покинут","тик 7: Борис: гиперпрыжок завершён (Станция), полигон покинут","тик 9: Мария: гиперпрыжок завершён (Станция), полигон покинут"],"summary":["уничтожены: никто","спаслись: Иван, Филипп, Борис, Мария","ущерб: 0","длительность: 9"]},{"number":6,"title":"Снятие глушения","description":"В тике 10 Кондор отпускает Марию и присоединяется к обстрелу. Мария уходит, зато Борис погибает быстрее.","input":["стратегия: сначала дорогие","тик 1: Кондор: флотовый гиперпрыжок Астероидный пояс","тик 4: Кондор: глушение Шакал Филипп","тик 4: Кондор: глушение Гарпия Борис","тик 4: Кондор: глушение Кондор Мария","тик 10: Кондор: снять глушение Кондор","запуск симуляции"],"journal":["тик 1: Кондор: набор скорости для перехода в прыжок","тик 1: Шакал: набор скорости для перехода в прыжок","тик 1: Гарпия: набор скорости для перехода в прыжок","тик 1: Молот: набор скорости для перехода в прыжок","тик 1: Секира: набор скорости для перехода в прыжок","тик 1: приказ «гиперпрыжок» принят (флот -> Астероидный пояс)","тик 1: Кондор: гиперпрыжок начался","тик 1: Шакал: гиперпрыжок начался","тик 1: Гарпия: гиперпрыжок начался","тик 1: Молот: гиперпрыжок начался","тик 1: Секира: гиперпрыжок начался","тик 3: Кондор: гиперпрыжок завершён (Астероидный пояс)","тик 3: Шакал: гиперпрыжок завершён (Астероидный пояс)","тик 3: Гарпия: гиперпрыжок завершён (Астероидный пояс)","тик 4: попытка глушения двигателя Шакал -> Филипп: успех","тик 4: Филипп: сбой двигателя","тик 4: попытка глушения двигателя Гарпия -> Борис: успех","тик 4: Борис: сбой двигателя","тик 4: попытка глушения двигателя Кондор -> Мария: успех","тик 4: Мария: сбой двигателя","тик 4: назначена главная цель: Филипп","тик 4: Иван: набор скорости для перехода в прыжок","тик 5: Иван: гиперпрыжок начался","тик 5: Молот: гиперпрыжок завершён (Астероидный пояс)","тик 5: Секира: гиперпрыжок завершён (Астероидный пояс)","тик 6: Филипп: прочность 3800 (-1200)","тик 7: Филипп: прочность 2600 (-1200)","тик 7: Иван: гиперпрыжок завершён (Станция), полигон покинут","тик 8: Филипп: прочность 1400 (-1200)","тик 9: Филипп: прочность 200 (-1200)","тик 10: Кондор: глушение снято, двигатель цели работает","тик 10: Филипп: прочность 0 (-1300)","тик 10: корабль уничтожен: Филипп","тик 10: Мария: набор скорости для перехода в прыжок","тик 11: назначена главная цель: Борис","тик 11: Борис: прочность 3600 (-1400)","тик 11: Мария: гиперпрыжок начался","тик 12: Борис: прочность 2200 (-1400)","тик 13: Борис: прочность 800 (-1400)","тик 14: Борис: прочность 0 (-1400)","тик 14: корабль уничтожен: Борис","тик 15: Мария: гиперпрыжок завершён (Станция), полигон покинут"],"summary":["уничтожены: Филипп, Борис","спаслись: Иван, Мария","ущерб: 6000000","длительность: 15"]}];
+var current = null, groups = [], timer = null, index = 0, speed = 1, paused = false;
+var BASE_DELAY = 900;
+
+function byId(id) { return document.getElementById(id); }
+function esc(text) {
+  return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+}
+
+function category(message) {
+  if (message.indexOf("откатан") >= 0) return "undo";
+  if (message.indexOf("отклонён") >= 0) return "reject";
+  if (message.indexOf("корабль уничтожен") >= 0) return "kill";
+  if (message.indexOf("прочность") >= 0) return "damage";
+  if (message.indexOf("главная цель") >= 0) return "primary";
+  if (message.indexOf("глушен") >= 0 || message.indexOf("сбой двигателя") >= 0) return "ew";
+  if (message.indexOf("полигон покинут") >= 0) return "escape";
+  if (message.indexOf("назначена эскадрилья") >= 0 || message.indexOf("назначен лидером") >= 0) return "staff";
+  if (message.indexOf("настройке приёма") >= 0) return "settings";
+  if (message.indexOf("принят (") >= 0) return "order";
+  return "move";
+}
+
+function parseGroups(journal) {
+  var result = [];
+  journal.forEach(function (line) {
+    var match = line.match(/^тик (\d+): (.*)$/);
+    var tick = parseInt(match[1], 10);
+    if (result.length === 0 || result[result.length - 1].tick !== tick) result.push({ tick: tick, lines: [] });
+    result[result.length - 1].lines.push(match[2]);
+  });
+  return result;
+}
+
+function renderGroup(group) {
+  var journal = byId("journal");
+  group.lines.forEach(function (message) {
+    var row = document.createElement("div");
+    row.className = "line c-" + category(message);
+    row.innerHTML = '<span class="tick">тик ' + group.tick + '</span><span class="msg">' + esc(message) + "</span>";
+    journal.appendChild(row);
+  });
+  journal.scrollTop = journal.scrollHeight;
+}
+
+function setStatus(text, done) {
+  byId("status").textContent = text;
+  byId("status").classList.toggle("done", Boolean(done));
+}
+
+function showSummary() {
+  var panel = byId("summaryPanel");
+  var summary = byId("summary");
+  summary.innerHTML = "";
+  current.summary.forEach(function (line) {
+    var separator = line.indexOf(":");
+    var key = document.createElement("div");
+    key.className = "k";
+    key.textContent = line.slice(0, separator);
+    var value = document.createElement("div");
+    value.className = "v";
+    value.textContent = line.slice(separator + 2);
+    summary.appendChild(key);
+    summary.appendChild(value);
+  });
+  panel.hidden = false;
+  requestAnimationFrame(function () {
+    summary.classList.add("show");
+    panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+}
+
+function stopPlayback() {
+  if (timer !== null) clearTimeout(timer);
+  timer = null; paused = false; index = 0;
+  byId("pause").disabled = true;
+  byId("pause").textContent = "Пауза";
+  byId("speed").disabled = true;
+}
+
+function finish() {
+  stopPlayback();
+  setStatus("операция завершена · тиков: " + (groups.length === 0 ? 0 : groups[groups.length - 1].tick), true);
+  showSummary();
+}
+
+function step() {
+  if (index >= groups.length) { finish(); return; }
+  var group = groups[index];
+  index += 1;
+  renderGroup(group);
+  setStatus("тик " + group.tick + " из " + groups[groups.length - 1].tick);
+  timer = setTimeout(step, BASE_DELAY / speed);
+}
+
+function play() {
+  stopPlayback();
+  byId("journal").innerHTML = "";
+  byId("summaryPanel").hidden = true;
+  byId("summary").classList.remove("show");
+  byId("pause").disabled = false;
+  byId("speed").disabled = false;
+  setStatus("запуск...");
+  timer = setTimeout(step, 250);
+}
+
+function togglePause() {
+  if (timer === null && !paused) return;
+  if (paused) {
+    paused = false;
+    byId("pause").textContent = "Пауза";
+    timer = setTimeout(step, BASE_DELAY / speed);
+  } else {
+    paused = true;
+    clearTimeout(timer);
+    timer = null;
+    byId("pause").textContent = "Продолжить";
+    setStatus("пауза");
+  }
+}
+
+function showAll() {
+  stopPlayback();
+  byId("journal").innerHTML = "";
+  groups.forEach(renderGroup);
+  finish();
+}
+
+function selectScenario(scenario) {
+  stopPlayback();
+  current = scenario;
+  groups = parseGroups(scenario.journal);
+  byId("tabs").querySelectorAll(".tab").forEach(function (tab) {
+    tab.classList.toggle("active", Number(tab.dataset.n) === scenario.number);
+  });
+  byId("title").textContent = scenario.number + ". " + scenario.title;
+  byId("desc").textContent = scenario.description;
+  byId("inputLines").innerHTML = scenario.input.map(function (line) {
+    var head = line.indexOf("стратегия:") === 0 || line.indexOf("настройка:") === 0;
+    return '<span class="' + (head ? "head" : "") + '">' + esc(line) + "</span>";
+  }).join("\n");
+  byId("journal").innerHTML = '<div class="empty">Журнал пуст. Нажмите «Запуск симуляции».</div>';
+  byId("summaryPanel").hidden = true;
+  byId("summary").classList.remove("show");
+  setStatus("готов к запуску · тиков: " + (groups.length === 0 ? 0 : groups[groups.length - 1].tick));
+}
+
+SCENARIOS.forEach(function (scenario) {
+  var tab = document.createElement("button");
+  tab.className = "tab";
+  tab.dataset.n = scenario.number;
+  tab.innerHTML = '<span class="num">' + scenario.number + "</span>" + esc(scenario.title);
+  tab.addEventListener("click", function () { selectScenario(scenario); });
+  byId("tabs").appendChild(tab);
+});
+
+byId("play").addEventListener("click", play);
+byId("pause").addEventListener("click", togglePause);
+byId("all").addEventListener("click", showAll);
+byId("speed").addEventListener("click", function () {
+  speed = speed >= 4 ? 1 : speed * 2;
+  byId("speed").textContent = "x" + speed;
+});
+
+selectScenario(SCENARIOS[0]);
+</script>
+</body>
+</html>
